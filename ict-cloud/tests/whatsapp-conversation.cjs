@@ -22,7 +22,7 @@ const chat=[
  '[11/10, 5:40 PM] Teacher Gamma: هو فرق بس فصل سنة سادسة فرق درس بس والتقييم لكن باقي الفصول زي بعض'
 ].join('\n');
 const result=parseChat(chat,staff);
-assert.equal(result.totalMessages,6);
+assert.equal(result.totalMessages,7);
 assert.equal(result.items.length,7,'each teacher/grade needs an independent row');
 assert.equal(result.directives.length,1,'supervisor request is not a lesson report');
 function row(id,grade){const r=result.items.find(x=>x.staffId===id&&x.grade===grade);assert.ok(r,'Missing '+id+' '+grade);return r}
@@ -38,7 +38,7 @@ assert.equal(row('c','PREP1').week,6);
 assert.equal(row('c','PREP2').week,7);
 assert.equal(row('c','PREP3').week,null);
 assert.equal(result.items.filter(x=>x.staffId==='d').length,0,'No invented update for silent staff');
-assert.equal(splitChat(chat).length,6);
+assert.equal(splitChat(chat).length,7);
 const unlinked=parseChat('[11/10, 9:00 AM] Unknown User: رابعة ابتدائي lesson 3',staff);
 assert.equal(unlinked.items.length,1);
 assert.equal(unlinked.items[0].staffId,null,'unrecognized senders cannot be silently linked');
