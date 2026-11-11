@@ -9,7 +9,7 @@ permissions:
   contents: read
 jobs:
   test-and-package:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -55,7 +55,7 @@ jobs:
           retention-days: 30
   deploy-pages:
     needs: test-and-package
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     permissions:
       pages: write
       id-token: write
