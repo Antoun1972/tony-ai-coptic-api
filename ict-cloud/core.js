@@ -45,8 +45,8 @@ function demoInit(){
  App.assignments=[{id:'as-a',staff_id:'demo-a',class_id:'cls-a',school_id:'demo',year_id:'demo-year'}];
  App.progress=[{id:'p-a',school_id:'demo',year_id:'demo-year',staff_id:'demo-a',grade:'4th Primary',section:'A',theme_unit:'Theme 2',lesson:'Lesson 2',week:6,evaluation:'غير مذكور',notes:'هذا السجل مثال افتراضي فقط',review_state:'flagged',submitted_by:'demo',updated_at:new Date().toISOString(),version:1}];
  App.documents=[];App.questions=[
-  {id:'q1',school_id:'demo',grade:'4th Primary',qtype:'true_false',body:'This is a fictional demonstration statement.',answer:'True',source_ref:'DEMO – not a textbook',approved:true,marks:1},
-  {id:'q2',school_id:'demo',grade:'4th Primary',qtype:'mcq',body:'Which option is a fictional answer?',choices:['Alpha','Beta','Gamma'],answer:'Alpha',source_ref:'DEMO – not a textbook',approved:true,marks:1}
+  {id:'q1',school_id:'demo',grade:'4th Primary',qtype:'true_false',language:'en',body:'This is a fictional demonstration statement.',answer:'True',source_ref:'DEMO – not a textbook',approved:true,marks:1},
+  {id:'q2',school_id:'demo',grade:'4th Primary',qtype:'mcq',language:'en',body:'Which option is a fictional answer?',choices:['Alpha','Beta','Gamma'],answer:'Alpha',source_ref:'DEMO – not a textbook',approved:true,marks:1}
  ];App.exams=[];App.meetings=[];App.members=[];App.privateStaff=[];App.profiles=[];
  App.branding={governorate:'Cairo Governorate',administration:'Rod El-Farag Education',school_name:'COLLÈGE SAINT PAUL – FRÈRES SHOUBRA',department:'ICT Department',header_note:'DEMONSTRATION ONLY',footer_note:'TONY AI – DEMO',version:1};
  App.initialized=true;syncLabel('وضع تجربة – دون حفظ سحابي','');$('signoutButton').hidden=false;render();
