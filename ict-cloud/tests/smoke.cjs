@@ -70,6 +70,32 @@ const server=http.createServer((req,res)=>{
   if(roster.count!==1 || roster.profileCount!==1 || !roster.shown)throw Error('Authorized member list failed: '+JSON.stringify(roster));
   if(roster.requestPaths.some(u=>u.includes('??')))throw Error('Double query marker in REST requests: '+JSON.stringify(roster.requestPaths));
   console.log('PASS: authorized member roster and properly normalized PostgREST query strings');
+  // Check the private-import UI using synthetic, fictional data only.
+  // Real school teacher records are never committed into public GitHub Pages assets.
+  const migrationTest=await page.evaluate(()=>{
+    const pack={
+      schema:'tony-ict-teacher-schedule-import-v1',year:'2026/2027',
+      teachers:[{key:'dummy-1',name_ar:'مدرس تجريبي',name_en:'Fictional Demo Teacher'}],
+      classes:[{grade:'4th Primary',section:'A',teacher_key:'dummy-1',verified_class_assignment:true}],
+      timetable:[{teacher_key:'dummy-1',day:'Monday',period:4,grade:'4th Primary',section:'A',under_13:true,time_start_reference:'10:05',time_end_reference:'10:45'}],
+      grade_level_progress_reports:[{teacher_key:'dummy-1',grade:'4th Primary',theme_unit:'Theme 2',lesson:'Lesson 2',week:null,evaluation:null}],
+      proposed_visits:[{code:'V-DEMO',date:'2026-11-12',teacher_key:'dummy-1',period:4,grade:'4th Primary',section:'A',purpose:'Fictional demo',status:'proposed_not_conducted'}]
+    };
+    validateTeacherImport(pack);
+    let badRejected=false;
+    try{validateTeacherImport({...pack,teachers:[{...pack.teachers[0],key:'not valid'}]})}
+    catch{badRejected=true}
+    TeacherImport.pack=pack;
+    App.page='import';render();
+    const importShown=document.getElementById('main').textContent.includes('Fictional Demo Teacher');
+    TeacherImport.timetable=pack;
+    App.page='timetable';render();
+    const timetableShown=document.getElementById('main').textContent.includes('مدرس تجريبي');
+    const pendingShown=document.getElementById('main').textContent.includes('مقترحة فقط');
+    return {importShown,timetableShown,pendingShown,badRejected};
+  });
+  if(!Object.values(migrationTest).every(Boolean))throw Error('Private school timetable import regression failed: '+JSON.stringify(migrationTest));
+  console.log('PASS: private import file validation, head-only review preview, timetable and proposed-visit display');
   if(errors.length)throw Error('Browser JavaScript errors: '+errors.join('; '));
   console.log('PASS: login/demo state, teacher/progress tabs, distinct Week/Evaluation, approved-bank exam draft, A4 preview, mobile UI');
  }finally{await browser.close();server.close()}
