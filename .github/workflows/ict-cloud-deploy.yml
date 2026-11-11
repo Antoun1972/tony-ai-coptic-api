@@ -1,0 +1,27 @@
+name: Publish TONY AI ICT Cloud to HTTPS (run after enabling Pages)
+on:
+  workflow_dispatch:
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+jobs:
+  deploy:
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - name: Check that preview is structurally complete
+        run: |
+          node --check ict-cloud/core.js
+          node --check ict-cloud/pages.js
+          node --check ict-cloud/extras.js
+          test -s ict-cloud/index.html
+      - uses: actions/configure-pages@v5
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: ./ict-cloud
+      - id: deployment
+        uses: actions/deploy-pages@v4
