@@ -72,10 +72,10 @@ function progressView(){
  const allowedCls=App.classes.filter(c=>c.year_id===App.yearId&&(App.member?.role!=='teacher'||assigned.some(a=>a.class_id===c.id)));
  const f=canSubmit()&&App.yearId?panel('تسجيل آخر حصة وموقف التقييم','البيانات المقترحة من رسائل واتساب لا تُحفظ إلا بعد مراجعتك لها.',
  '<form data-form="progress" id="progressForm" class="form">'+
- textarea('source_text','نص رسالة واتساب الأصلية (اختياري)','','placeholder="مثال: G5 lesson 2 theme 2 week 6"')+
- '<button class="soft sm" type="button" data-action="parse-progress">استخراج مقترحات من الرسالة — لا يحفظ تلقائيًا</button><div class="note warn" id="parseFeedback" hidden></div>'+
- '<div class="fields">'+pick('staff_id','المدرس',ownStaff.map(s=>[s.id,s.name_ar]))+
- pick('class_id','الفصل',allowedCls.map(c=>[c.id,c.grade+' – '+c.section]))+
+ textarea('source_text','ألصق محادثة واتساب كاملة أو رسالة واحدة (اختياري)','','placeholder="مثال: G5 lesson 2 theme 2 week 6"')+
+ '<button class="soft sm" type="button" data-action="parse-progress">تحليل محادثة واتساب كاملة — حسب المدرس والصف</button><div class="wa-analysis" id="parseFeedback" hidden></div>'+
+ '<div class="fields">'+pick('staff_id','المدرس',[['','اختر المدرس بعد التحقق'],...ownStaff.map(s=>[s.id,s.name_ar])],'','required')+
+ pick('class_id','الفصل',[['','اختر الشعبة بعد التحقق'],...allowedCls.map(c=>[c.id,c.grade+' – '+c.section])],'','required')+
  field('theme_unit','Theme / Unit','', 'text','required placeholder="Theme 2"')+
  field('lesson','Lesson','', 'text','required placeholder="Lesson 2"')+
  field('week','Week – الأسبوع','','number','required min="1" max="45"')+
@@ -90,6 +90,35 @@ function progressView(){
  f+panel('تقرير موقف الفصول','المعلومات التي لم يذكرها المدرس تبقى «غير مذكور»، وليس رقمًا مفترضًا.',
  table(['المدرس','الصف / الفصل','Theme / Lesson','Week','Evaluation','التاريخ','الحالة',''],rows));
 }
+
+/* Keep chat interpretation as reviewed drafts. Never silently attach grade-wide progress to a class. */
+const WhatsAppReview={analysis:null};
+function showWhatsAppAnalysis(data){
+  const box=$('parseFeedback');if(!box)return;
+  const issues=r=>r.flags.concat(r.missing.map(x=>'غير مؤكد: '+x));
+  const card=r=>'<section class="wa-entry">'+
+    '<div class="wa-entry-head"><b>'+safe(r.sender)+'</b><span class="tag blue">'+safe(TonyWAParser.gradeLabel(r.grade))+'</span></div>'+
+    '<p class="wa-small">'+(r.staffId?'مرسل معروف في قائمة المدرسين':'اسم المرسل غير مرتبط بملف مدرس')+' • مستوى الصف وليس فصلًا محددًا</p>'+
+    '<div class="wa-values"><span>Theme: <b>'+safe(r.theme||'غير مؤكد')+'</b></span>'+
+    '<span>Lesson: <b>'+safe(r.lesson||'غير مؤكد')+'</b></span>'+
+    '<span>Week: <b>'+safe(r.week??'غير مذكور')+'</b></span>'+
+    '<span>Evaluation: <b>'+safe(r.evaluation??'غير مذكور')+'</b></span></div>'+
+    (r.plannedLesson?'<p class="wa-small">خطة الدرس التالي: '+safe(r.plannedLesson)+' (ليس درسًا تم تدريسه)</p>':'')+
+    (issues(r).length?'<div class="wa-issues">'+issues(r).map(x=>'<p>• '+safe(x)+'</p>').join('')+'</div>':'')+
+    (r.notes.length?'<p class="wa-small">ملاحظات: '+safe(r.notes.join(' | '))+'</p>':'')+
+    '<details><summary>نصوص الرسائل المصدر</summary>'+r.source.map(x=>'<p class="wa-source">'+safe(x.date+' '+x.time+' — '+x.text)+'</p>').join('')+'</details>'+
+    (canSubmit()?'<button type="button" class="soft sm" data-action="use-chat-row" data-id="'+safe(r.id)+'">نقل المقترح إلى نموذج المراجعة</button>':'')+'</section>';
+  const directions=data.directives.length?'<div class="note"><b>تكليفات إدارية (ليست تقدم منهج):</b>'+data.directives.map(x=>'<p>'+safe(x.text)+'</p>').join('')+'</div>':'';
+  const comments=data.comments.length?'<div class="note warn"><b>رسائل لم يمكن إسنادها بثقة:</b>'+data.comments.map(x=>'<p>'+safe(x.sender)+': '+safe(x.text)+' — '+safe(x.reason)+'</p>').join('')+'</div>':'';
+  const absent=App.staff.filter(s=>!s.archived&&!data.items.some(x=>x.staffId===s.id));
+  box.innerHTML='<div class="wa-heading"><b>نتائج منفصلة: '+data.items.length+' سجلات</b><span class="tag blue">'+data.totalMessages+' رسائل</span></div>'+
+    '<p class="wa-small">لا يتم حفظ أي شيء تلقائيًا. رقم Week مستقل عن Evaluation، واسم الشعبة يحتاج تأكيدًا.</p>'+
+    directions+'<div class="wa-grid">'+data.items.map(card).join('')+'</div>'+comments+
+    (absent.length?'<p class="wa-small">لا يوجد رد مرتبط بالأسماء التالية في هذه المحادثة: '+absent.map(x=>safe(x.name_ar)).join('، ')+' — لا يعني ذلك عدم التدريس.</p>':'')+
+    '<p class="wa-small">استخدم زر النقل لسجل واحد فقط، ثم اختر اسم المدرس والفصل وأكمل الحقول الناقصة قبل الحفظ.</p>';
+  box.hidden=false;
+}
+
 function extractTeacherMessage(raw){
  const t=String(raw).replace(/[٠-٩]/g,d=>String('٠١٢٣٤٥٦٧٨٩'.indexOf(d)));
  const m=(re)=>t.match(re)?.[1]||'';
@@ -162,16 +191,30 @@ async function onAction(action,id){
  if(action==='refresh-account'){return bootstrap()}
  if(action==='refresh'){return run(async()=>{if(App.demo)return;await loadData()})}
  if(action==='parse-progress'){
-  const form=$('progressForm'),raw=form?.querySelector('[name="source_text"]')?.value||'';
-  const p=extractTeacherMessage(raw);
-  if(p.theme)form.querySelector('[name="theme_unit"]').value=p.theme;
-  if(p.lesson)form.querySelector('[name="lesson"]').value=p.lesson;
-  if(p.week)form.querySelector('[name="week"]').value=p.week;
-  if(p.evaluation)form.querySelector('[name="evaluation"]').value=p.evaluation;
-  const box=$('parseFeedback');box.hidden=false;box.innerHTML='<b>مقترحات تحتاج تأكيدك:</b> '+safe(p.theme||'Theme غير محدد')+' | '+safe(p.lesson||'Lesson غير محدد')+' | Week '+safe(p.week||'غير محدد')+' | Evaluation '+safe(p.evaluation||'غير مذكور')+'<br>'+p.flags.map(safe).join(' ');
-  return;
- }
- if(action==='edit-staff'){
+   const form=$('progressForm'),raw=form?.querySelector('[name="source_text"]')?.value||'';
+   if(!raw.trim())return flash('الصق نص المحادثة أولًا.',true);
+   if(!window.TonyWAParser)return flash('محرك التحليل غير محمل. أعد فتح الصفحة.',true);
+   WhatsAppReview.analysis=TonyWAParser.parseChat(raw,App.staff);
+   showWhatsAppAnalysis(WhatsAppReview.analysis);
+   if(!WhatsAppReview.analysis.items.length)flash('لا توجد معلومات منهج واضحة؛ راجع تنسيق الرسائل.',true);
+   return;
+  }
+  if(action==='use-chat-row'){
+   const x=WhatsAppReview.analysis?.items.find(z=>z.id===id),form=$('progressForm');
+   if(!x||!form)return;
+   const t=form.querySelector('[name="staff_id"]');if(t)t.value=x.staffId||'';
+   const cl=form.querySelector('[name="class_id"]');if(cl)cl.value='';
+   for(const [k,v] of Object.entries({theme_unit:x.theme,lesson:x.lesson,week:x.week,evaluation:x.evaluation})){
+     const el=form.querySelector('[name="'+k+'"]');if(el)el.value=v??'';
+   }
+   const source=form.querySelector('[name="source_text"]');
+   if(source)source.value=x.source.map(m=>'['+m.date+', '+m.time+'] '+x.sender+': '+m.text).join('\n');
+   const notes=form.querySelector('[name="notes"]');
+   if(notes)notes.value=['تقرير على مستوى الصف '+TonyWAParser.gradeLabel(x.grade),...x.flags,...x.notes].join('\n');
+   flash('تم تجهيز المقترح. اختر المدرس والشعبة وتأكد من القيم المفقودة قبل الحفظ.');
+   form.scrollIntoView({behavior:'smooth',block:'start'});return;
+  }
+  if(action==='edit-staff'){
   const s=App.staff.find(x=>x.id===id),v=App.privateStaff.find(x=>x.staff_id===id);
   if(!s)return;App.page='teachers';render();const form=document.querySelector('form[data-form="staff"]');if(!form)return;
   for(const [k,val] of Object.entries({...s,...v})){const input=form.elements.namedItem(k);if(input && (input instanceof HTMLInputElement || input instanceof HTMLSelectElement))input.value=val??''}
