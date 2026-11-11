@@ -5,6 +5,9 @@ on:
       - "ict-cloud/**"
       - ".github/workflows/ict-cloud-pages.yml"
   workflow_dispatch:
+concurrency:
+  group: ict-cloud-production-pages
+  cancel-in-progress: true
 permissions:
   contents: read
 jobs:
