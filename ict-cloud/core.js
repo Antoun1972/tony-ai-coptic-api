@@ -56,8 +56,10 @@ function storeSession(s){App.session=s;if(s)localStorage.setItem('tony-ict-cloud
 const apiRoot=App.cfg?.supabaseUrl?.replace(/\/+$/,'')||'';
 async function api(path,{method='GET',data=null,raw=false,token=null,headers={}}={}){
  if(!apiRoot||!App.cfg?.publishableKey)throw Error('التطبيق لم يتصل بمشروع قاعدة البيانات.');
- const auth=token||App.session?.access_token||App.cfg.publishableKey;
- const h={apikey:App.cfg.publishableKey,Authorization:'Bearer '+auth,...headers};
+ const auth=token||App.session?.access_token||null;
+ // New Supabase publishable keys are not JWTs. Send them as apikey only.
+ const h={apikey:App.cfg.publishableKey,...headers};
+ if(auth&&auth!==App.cfg.publishableKey)h.Authorization='Bearer '+auth;
  if(data!==null && !raw && !('Content-Type' in h))h['Content-Type']='application/json';
  let response;
  try{response=await fetch(apiRoot+path,{method,headers:h,body:data===null?undefined:raw?data:JSON.stringify(data)})}
