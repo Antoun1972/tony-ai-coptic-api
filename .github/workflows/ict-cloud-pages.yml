@@ -22,6 +22,7 @@ jobs:
           node --check ict-cloud/core.js
           node --check ict-cloud/pages.js
           node --check ict-cloud/extras.js
+          node --check ict-cloud/import.js
           node --check ict-cloud/config.js
           node --check ict-cloud/tests/smoke.cjs
           grep -q 'المدرس الأول' ict-cloud/index.html
@@ -39,7 +40,7 @@ jobs:
         shell: bash
         run: |
           mkdir -p /tmp/tony-cloud-release
-          cp ict-cloud/{index.html,styles.css,config.js,core.js,pages.js,extras.js,sw.js,manifest.webmanifest,icon.svg,README.md} /tmp/tony-cloud-release/
+          cp ict-cloud/{index.html,styles.css,config.js,core.js,pages.js,extras.js,import.js,sw.js,manifest.webmanifest,icon.svg,README.md} /tmp/tony-cloud-release/
           cd /tmp/tony-cloud-release
           zip -q "$GITHUB_WORKSPACE/TONY_AI_ICT_Cloud_MVP_Web.zip" *
       - uses: actions/upload-artifact@v4
