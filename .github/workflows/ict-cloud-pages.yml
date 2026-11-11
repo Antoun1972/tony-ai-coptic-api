@@ -39,7 +39,7 @@ jobs:
         shell: bash
         run: |
           mkdir -p /tmp/tony-cloud-release
-          cp ict-cloud/{index.html,styles.css,config.js,core.js,pages.js,extras.js,manifest.webmanifest,icon.svg,README.md} /tmp/tony-cloud-release/
+          cp ict-cloud/{index.html,styles.css,config.js,core.js,pages.js,extras.js,sw.js,manifest.webmanifest,icon.svg,README.md} /tmp/tony-cloud-release/
           cd /tmp/tony-cloud-release
           zip -q "$GITHUB_WORKSPACE/TONY_AI_ICT_Cloud_MVP_Web.zip" *
       - uses: actions/upload-artifact@v4
