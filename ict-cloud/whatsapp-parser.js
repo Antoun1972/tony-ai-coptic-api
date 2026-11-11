@@ -55,7 +55,7 @@
     const themes=values(t,/\b(?:theme|them|unit)\s*[:\-]?\s*(\d{1,2})/gi).concat(values(t,/(?:الوحدة|الثيم)\s*[:\-]?\s*(\d{1,2})/gi));
     const weeks=values(t,/\b(?:week|wek|wk)\s*[:\-]?\s*(\d{1,2})/gi).concat(values(t,/(?:الاسبوع|اسبوع)\s*[:\-]?\s*(\d{1,2})/gi));
     const evaluations=[];
-    const evRe=/(?:\b(?:evaluation|assessment|eval)\b|التقييم|تقييم)\s*(?:رقم\s*)?([0-9]{1,2}|الاولى?|الثاني|الثانية|الثالث|الثالثة|الرابع|الرابعة|الخامس|الخامسة|السادس|السادسة|السابع|السابعة|الثامن|الثامنة|التاسع|العاشر)\b/gi;
+    const evRe=/(?:\b(?:evaluation|assessment|eval)\b|التقييم|تقييم)\s*(?:رقم\s*)?([0-9]{1,2}|الاولى?|الثاني|الثانية|الثالث|الثالثة|الرابع|الرابعة|الخامس|الخامسة|السادس|السادسة|السابع|السابعة|الثامن|الثامنة|التاسع|العاشر)(?=\s|$|[،,؛.;!؟])/gi;
     for(const m of t.matchAll(evRe)){const k=norm(m[1]);const v=/^\d+$/.test(k)?Number(k):ords[k];if(Number.isInteger(v))evaluations.push(v);}
     const flags=[];
     const unique=a=>[...new Set(a.map(x=>x.value??x))];
