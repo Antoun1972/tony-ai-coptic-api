@@ -1,6 +1,6 @@
 /* Cache only the public app shell. NEVER cache school data, authentication or API calls. */
-const CACHE_NAME='tony-ict-cloud-shell-v1';
-const ASSETS=['./','./index.html','./styles.css','./core.js','./pages.js','./extras.js','./config.js','./icon.svg','./manifest.webmanifest'];
+const CACHE_NAME='tony-ict-cloud-shell-v2';
+const ASSETS=['./','./index.html','./styles.css','./core.js','./pages.js','./extras.js','./import.js','./config.js','./icon.svg','./manifest.webmanifest'];
 self.addEventListener('install',event=>{
   event.waitUntil(caches.open(CACHE_NAME).then(cache=>cache.addAll(ASSETS)).then(()=>self.skipWaiting()));
 });
