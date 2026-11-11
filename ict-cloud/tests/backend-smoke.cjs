@@ -8,7 +8,8 @@ if(!cfg?.supabaseUrl?.startsWith('https://') || !cfg?.publishableKey?.startsWith
 async function check(){
  const tables=['schools','staff','progress_entries','staff_private','documents'];
  for(const table of tables){
-  const res=await fetch(cfg.supabaseUrl+'/rest/v1/'+table+'?select=id&limit=1',{
+  const primaryKey=table==='staff_private'?'staff_id':'id';
+  const res=await fetch(cfg.supabaseUrl+'/rest/v1/'+table+'?select='+primaryKey+'&limit=1',{
    headers:{apikey:cfg.publishableKey,Accept:'application/json'}
   });
   const raw=await res.text();
