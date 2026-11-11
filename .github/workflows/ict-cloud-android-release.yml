@@ -1,0 +1,70 @@
+name: Build and publish TONY AI ICT Android APK
+on:
+  push:
+    paths:
+      - "android-cloud/**"
+      - ".github/workflows/ict-cloud-android-release.yml"
+  workflow_dispatch:
+permissions:
+  contents: write
+concurrency:
+  group: tony-ict-cloud-android-release
+  cancel-in-progress: true
+jobs:
+  build-and-publish:
+    runs-on: ubuntu-24.04
+    defaults:
+      run:
+        working-directory: android-cloud
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+      - uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: '8.7'
+      - name: Install Android SDK
+        run: |
+          set -e
+          SDKMGR="$(command -v sdkmanager || true)"
+          if [ -z "$SDKMGR" ]; then
+            SDKMGR="$(find "$ANDROID_HOME/cmdline-tools" -type f -name sdkmanager | head -1)"
+          fi
+          test -x "$SDKMGR"
+          "$SDKMGR" 'platforms;android-35' 'build-tools;35.0.0'
+      - name: Confirm URL and minimal permissions
+        run: |
+          set -e
+          grep -q 'https://antoun1972.github.io/tony-ai-coptic-api/' app/src/main/java/com/tonyai/ictcloud/MainActivity.java
+          ! grep -q 'addJavascriptInterface' app/src/main/java/com/tonyai/ictcloud/MainActivity.java
+          curl --fail --location --retry 3 --max-time 30 -o /tmp/tony-cloud-site.html 'https://antoun1972.github.io/tony-ai-coptic-api/'
+          grep -q 'TONY AI ICT Manager' /tmp/tony-cloud-site.html
+      - name: Compile APK and check signature
+        run: |
+          gradle --no-daemon --stacktrace :app:assembleDebug :app:lintDebug
+          APK='app/build/outputs/apk/debug/app-debug.apk'
+          test -s "$APK"
+          "$ANDROID_HOME/build-tools/35.0.0/apksigner" verify --verbose --print-certs "$APK"
+          mkdir -p dist
+          cp "$APK" dist/TONY_AI_ICT_Cloud_Android.apk
+          sha256sum dist/TONY_AI_ICT_Cloud_Android.apk | tee dist/SHA256.txt
+      - uses: actions/upload-artifact@v4
+        with:
+          name: TONY_AI_ICT_Cloud_Android_APK
+          path: |
+            android-cloud/dist/TONY_AI_ICT_Cloud_Android.apk
+            android-cloud/dist/SHA256.txt
+          if-no-files-found: error
+          retention-days: 30
+      - name: Publish permanent public GitHub Release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release create ict-cloud-android-v1.0.0 \
+            dist/TONY_AI_ICT_Cloud_Android.apk \
+            dist/SHA256.txt \
+            --repo "${{ github.repository }}" \
+            --title 'TONY AI ICT Cloud - Android test APK v1.0.0' \
+            --notes 'Android test build opening the same HTTPS web interface as Windows/Chrome. No school staff data is bundled. This is a DEBUG-signed preview and has not passed independent security review or device compatibility testing. Do not enter real private school data before approval and access control verification.'
