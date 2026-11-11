@@ -55,3 +55,23 @@ jobs:
           path: TONY_AI_ICT_Cloud_MVP_Web.zip
           if-no-files-found: error
           retention-days: 30
+
+  deploy-pages:
+    needs: test-and-package
+    if: github.ref == 'refs/heads/main'
+    runs-on: ubuntu-24.04
+    permissions:
+      contents: read
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/configure-pages@v5
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: ./ict-cloud
+      - id: deployment
+        uses: actions/deploy-pages@v4
