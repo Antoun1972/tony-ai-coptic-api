@@ -13,3 +13,18 @@ html,body,#shell,.layout,main{max-width:100%;min-width:0}
   .panel,.tablewrap{width:100%;max-width:100%;min-width:0}
   .tablewrap{overflow-x:auto;overscroll-behavior-x:contain}
 }
+
+/* WhatsApp batch interpretation: same responsive UI on Android and desktop. */
+.wa-analysis{margin:16px 0;padding:14px;border:1px solid var(--line);border-radius:14px;background:var(--soft)}
+.wa-heading{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-bottom:8px}
+.wa-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:13px;margin:14px 0}
+.wa-entry{min-width:0;background:var(--paper);border:1px solid var(--line);border-radius:12px;padding:14px;box-shadow:var(--shadow)}
+.wa-entry-head{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:8px;margin-bottom:7px}
+.wa-entry-head b{font-size:15px}.wa-small{font-size:12px;line-height:1.8;color:var(--muted);margin:6px 0 12px}
+.wa-values{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;margin:10px 0}
+.wa-values span{background:#f6f8fc;padding:8px;border-radius:8px;font-size:12px;line-height:1.5;overflow-wrap:anywhere}
+.wa-issues{border-right:3px solid var(--gold);background:#fff9ee;padding:7px 11px;margin:10px 0;border-radius:8px}
+.wa-issues p{margin:3px 0;font-size:12px;color:#796022;line-height:1.7}
+.wa-entry details{margin:10px 0;font-size:12px;color:var(--muted);overflow-wrap:anywhere}
+.wa-entry summary{cursor:pointer;font-weight:650;color:var(--blue)}.wa-source{padding:7px;border-bottom:1px solid var(--line);white-space:pre-wrap}
+@media(max-width:830px){.wa-grid{grid-template-columns:1fr}.wa-values{grid-template-columns:repeat(2,minmax(0,1fr))}}
