@@ -1,0 +1,57 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#152c48">
+  <meta name="description" content="TONY AI ICT Manager — متابعة المدرسين والمناهج والتقييمات للمدرس الأول، عبر الأجهزة">
+  <title>TONY AI | متابعة ICT – المدرس الأول</title>
+  <link rel="manifest" href="./manifest.webmanifest">
+  <link rel="icon" href="./icon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="./styles.css">
+</head>
+<body>
+<div id="shell">
+  <header class="topbar">
+    <div class="brandmark"><span class="brandicon">T</span><span><strong>TONY AI</strong><small>ICT MANAGER · CONNECTED</small></span></div>
+    <div class="top-right"><span id="syncIndicator" class="sync-pill"><span class="signal"></span> وضع التجربة</span><button type="button" id="themeToggle" class="iconbtn" aria-label="تغيير التباين">◐</button><button type="button" id="signoutButton" class="ghost sm" hidden>تسجيل الخروج</button></div>
+  </header>
+  <div class="layout">
+    <aside class="sidebar">
+      <div class="school">
+        <div class="school-icon" aria-hidden="true">✦</div>
+        <b>Collège Saint Paul</b><small>Frères Shoubra · 2026/2027</small>
+        <span class="role-tag">لوحة المدرس الأول – ICT</span>
+      </div>
+      <nav aria-label="أقسام البرنامج" id="sideNav">
+        <button type="button" data-page="dashboard" class="active"><span>▣</span> لوحة المتابعة</button>
+        <button type="button" data-page="teachers"><span>♙</span> ملفات المدرسين</button>
+        <button type="button" data-page="progress"><span>▤</span> موقف المنهج والتقييمات</button>
+        <button type="button" data-page="years"><span>▦</span> السنوات والفصول</button>
+        <button type="button" data-page="documents"><span>▧</span> الكتب والمراجعات</button>
+        <button type="button" data-page="questions"><span>☷</span> بنك الأسئلة</button>
+        <button type="button" data-page="exams"><span>▤</span> استوديو الامتحانات</button>
+        <button type="button" data-page="meetings"><span>▥</span> محاضر الاجتماعات</button>
+        <button type="button" data-page="members"><span>♧</span> الحسابات والصلاحيات</button>
+        <button type="button" data-page="branding"><span>◈</span> هوية المدرسة</button>
+      </nav>
+      <div class="sidebar-foot"><p id="schoolCaption">لا توجد بيانات مدرسة حقيقية في وضع التجربة.</p><small>TONY AI · تصميم متجاوب للموبايل والكمبيوتر</small></div>
+    </aside>
+    <main id="main" aria-live="polite"></main>
+  </div>
+  <nav class="mobile-nav" aria-label="تنقل سريع" id="mobileNav">
+    <button data-page="dashboard" class="active"><span>▣</span> الرئيسية</button>
+    <button data-page="progress"><span>▤</span> المنهج</button>
+    <button data-page="documents"><span>▧</span> الملفات</button>
+    <button data-page="exams"><span>☷</span> الامتحانات</button>
+    <button data-page="teachers"><span>♙</span> المدرسون</button>
+  </nav>
+</div>
+<div id="toast" role="status" aria-live="polite"></div>
+<dialog id="previewDialog">
+  <div class="preview-head"><div><b id="previewTitle">معاينة قبل الطباعة – A4</b><small>تأكد من الهوامش والإجابات قبل الاعتماد</small></div><div class="btn-row"><button class="primary sm" type="button" id="doPrint">طباعة / حفظ PDF</button><button class="soft sm" type="button" id="doWord">تصدير Word (.doc)</button><button class="ghost sm" type="button" id="closePreview">إغلاق ×</button></div></div>
+  <div class="preview-scroll"><iframe id="printFrame" title="معاينة الورقة المطبوعة" sandbox="allow-same-origin allow-modals"></iframe></div>
+</dialog>
+<script src="./config.js"></script>
+<script src="./app.js" defer></script>
+</body></html>
