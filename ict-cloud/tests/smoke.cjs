@@ -30,15 +30,18 @@ const server=http.createServer((req,res)=>{
   await page.locator('[data-action="preview-exam"]').first().waitFor({timeout:10000});
   await page.locator('[data-action="preview-exam"]').first().click();
   await page.locator('#previewDialog[open]').waitFor({timeout:10000});
-  await page.screenshot({path:process.env.GITHUB_WORKSPACE+'/ict-cloud-preview.png',fullPage:false});
   const frame=page.frameLocator('#printFrame');
   await frame.getByText('DRAFT',{exact:true}).first().waitFor({timeout:10000});
+  await frame.getByText('ICT Monthly Exam',{exact:false}).first().waitFor({timeout:10000});
+  await page.screenshot({path:process.env.GITHUB_WORKSPACE+'/ict-cloud-preview.png',fullPage:false});
   await page.locator('#closePreview').click();
   await page.locator('#sideNav [data-page="teachers"]').click();
   await page.getByRole('heading',{name:'ملفات المدرسين'}).waitFor({timeout:10000});
   // mobile smoke
   await page.setViewportSize({width:390,height:844});
   await page.locator('#mobileNav [data-page="dashboard"]').click();
+  const width=await page.evaluate(()=>({viewport:window.innerWidth,root:document.documentElement.scrollWidth,body:document.body.scrollWidth}));
+  if(width.root>width.viewport+2 || width.body>width.viewport+2)throw Error('Mobile page overflows horizontally: '+JSON.stringify(width));
   await page.screenshot({path:process.env.GITHUB_WORKSPACE+'/ict-cloud-mobile.png',fullPage:true});
   if(errors.length)throw Error('Browser JavaScript errors: '+errors.join('; '));
   console.log('PASS: login/demo state, teacher/progress tabs, distinct Week/Evaluation, approved-bank exam draft, A4 preview, mobile UI');
