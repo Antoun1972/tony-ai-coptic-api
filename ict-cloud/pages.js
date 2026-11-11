@@ -156,6 +156,7 @@ async function onForm(kind,form){
  if(kind==='make-exam')return buildExam(d,form);
 }
 async function onAction(action,id){
+ if(action==='run-school-import'||action==='reload-school-timetable')return onTeacherImportAction(action);
  if(action==='demo'){demoInit();return}
  if(action.startsWith('auth-')){App.view=action.slice(5);render();return}
  if(action==='refresh-account'){return bootstrap()}
