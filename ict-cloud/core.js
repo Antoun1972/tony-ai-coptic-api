@@ -132,14 +132,14 @@ async function loadData({silent=false}={}){
  }else{App.privateStaff=[];App.members=[];App.profiles=[]}
  App.lastSync=Date.now();if(!silent)syncLabel('تمت المزامنة','ok');
 }
-function go(page){if(!App.member&&!App.demo)return;App.page=page;render();window.scrollTo({top:0,behavior:'instant'})}
+function go(page){if(!App.member&&!App.demo)return;App.page=page;render();window.scrollTo({top:0,behavior:'instant'});if(page==='timetable'&&typeof loadTimetableCloud==='function')loadTimetableCloud().catch(e=>console.warn('Private timetable unavailable:',e.message))}
 function render(){
  const main=$('main');if(!main)return;
  $('signoutButton').hidden=!(App.demo||App.session);
  if(App.loading){main.innerHTML='<div class="panel"><div class="skeleton"></div><div class="skeleton"></div><div class="skeleton"></div><p>جارٍ التحقق من حساب المدرسة…</p></div>';return}
  if(!App.demo&&!App.session){main.innerHTML=authView();return}
  if(!App.demo&&!App.member){main.innerHTML=pendingView();return}
- const pages={dashboard:dashboardView,teachers:teachersView,progress:progressView,years:yearsView,documents:documentsView,questions:questionsView,exams:examsView,meetings:meetingsView,members:membersView,branding:brandingView};
+ const pages={dashboard:dashboardView,teachers:teachersView,progress:progressView,years:yearsView,documents:documentsView,questions:questionsView,exams:examsView,meetings:meetingsView,members:membersView,branding:brandingView,import:schoolImportView,timetable:timetableView};
  main.innerHTML=(App.demo?'<div class="fake-banner">⚠️ وضع تجربة افتراضي — لا توجد بيانات حقيقية، ولا تُحفظ هذه التغييرات في قاعدة المدرسة.</div>':'')+(pages[App.page]||dashboardView)();
  document.querySelectorAll('[data-page]').forEach(b=>b.classList.toggle('active',b.dataset.page===App.page));
  if(App.demo||App.member)$('schoolCaption').textContent=(App.school?.name||'المدرسة')+' · '+roleName(App.member?.role);
