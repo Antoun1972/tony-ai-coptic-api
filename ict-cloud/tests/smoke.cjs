@@ -43,6 +43,33 @@ const server=http.createServer((req,res)=>{
   const width=await page.evaluate(()=>({viewport:window.innerWidth,root:document.documentElement.scrollWidth,body:document.body.scrollWidth}));
   if(width.root>width.viewport+2 || width.body>width.viewport+2)throw Error('Mobile page overflows horizontally: '+JSON.stringify(width));
   await page.screenshot({path:process.env.GITHUB_WORKSPACE+'/ict-cloud-mobile.png',fullPage:true});
+  // Mock the authorized cloud REST client to verify query URL generation and member roster.
+  // This is isolated fictional data, not a real school-user credential.
+  const roster=await page.evaluate(async()=>{
+    const originalApi=window.api;
+    const requestPaths=[];
+    try{
+      App.demo=false;
+      App.session={access_token:'mock-jwt',expires_at:Math.floor(Date.now()/1000)+3600};
+      App.school={id:'fictional-school',name:'TEST ONLY'};
+      App.user={id:'fictional-user',email:'mock@example.test'};
+      App.member={role:'head',status:'active',school_id:'fictional-school'};
+      App.yearId=null;
+      window.api=async(url)=>{
+        requestPaths.push(url);
+        if(url.includes('/rest/v1/memberships?'))return [{id:'mem-1',user_id:'fictional-user',role:'head',status:'active',school_id:'fictional-school'}];
+        if(url.includes('/rest/v1/profiles?'))return [{id:'fictional-user',display_name:'Test Senior Teacher',email:'mock@example.test'}];
+        return [];
+      };
+      await loadData({silent:true});
+      App.page='members';
+      render();
+      return {count:App.members.length,profileCount:App.profiles.length,requestPaths,shown:document.getElementById('main').innerText.includes('Test Senior Teacher')};
+    }finally{window.api=originalApi}
+  });
+  if(roster.count!==1 || roster.profileCount!==1 || !roster.shown)throw Error('Authorized member list failed: '+JSON.stringify(roster));
+  if(roster.requestPaths.some(u=>u.includes('??')))throw Error('Double query marker in REST requests: '+JSON.stringify(roster.requestPaths));
+  console.log('PASS: authorized member roster and properly normalized PostgREST query strings');
   if(errors.length)throw Error('Browser JavaScript errors: '+errors.join('; '));
   console.log('PASS: login/demo state, teacher/progress tabs, distinct Week/Evaluation, approved-bank exam draft, A4 preview, mobile UI');
  }finally{await browser.close();server.close()}
