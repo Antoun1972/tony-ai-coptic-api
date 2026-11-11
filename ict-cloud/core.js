@@ -78,7 +78,7 @@ async function ensureSession(){
  const r=await api('/auth/v1/token?grant_type=refresh_token',{method:'POST',data:{refresh_token:s.refresh_token},token:App.cfg.publishableKey});
  r.expires_at=Math.floor(Date.now()/1000)+(r.expires_in||3600);storeSession(r);return r;
 }
-async function select(name,query=''){await ensureSession();return api('/rest/v1/'+name+(query?'?'+query:''))}
+async function select(name,query=''){await ensureSession();const cleaned=String(query||'').replace(/^\?+/,'');return api('/rest/v1/'+name+(cleaned?'?'+cleaned:''))}
 async function insert(name,obj){await ensureSession();return api('/rest/v1/'+name,{method:'POST',data:obj,headers:{Prefer:'return=representation'}})}
 async function update(name,id,patch,ver=null,key='id'){await ensureSession();const q='?'+key+'=eq.'+encodeURIComponent(id)+(ver===null?'':'&version=eq.'+ver);const rows=await api('/rest/v1/'+name+q,{method:'PATCH',data:patch,headers:{Prefer:'return=representation'}});if(!rows?.length)throw Error('تعارض: عُدّل السجل من جهاز آخر. حدّث الصفحة وراجع البيانات قبل الحفظ.');return rows[0]}
 async function callRpc(name,body={}){await ensureSession();return api('/rest/v1/rpc/'+name,{method:'POST',data:body})}
@@ -127,7 +127,8 @@ async function loadData({silent=false}={}){
  if(!chosen)App.yearId=(App.years.find(y=>y.is_current)||App.years[0])?.id||null;
  if(isHead()){
    try{App.privateStaff=await select('staff_private',q)}catch{App.privateStaff=[]}
-   try{App.members=await select('memberships',q);App.profiles=await select('profiles','?select=id,display_name,email')}catch{App.members=[];App.profiles=[]}
+   App.members=await select('memberships',q);
+   try{App.profiles=await select('profiles','select=id,display_name,email')}catch(e){App.profiles=[];console.warn('Profiles unavailable:',e.message)}
  }else{App.privateStaff=[];App.members=[];App.profiles=[]}
  App.lastSync=Date.now();if(!silent)syncLabel('تمت المزامنة','ok');
 }
