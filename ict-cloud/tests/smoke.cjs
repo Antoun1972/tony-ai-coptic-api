@@ -21,10 +21,16 @@ const server=http.createServer((req,res)=>{
   await page.locator('#sideNav [data-page="progress"]').click();
   await page.getByText('موقف المنهج والتقييمات',{exact:false}).first().waitFor();
   await page.locator('[name="source_text"]').fill('G5 lesson 2 theme 2 week 6');
-  await page.getByRole('button',{name:/استخراج مقترحات/}).click();
+  await page.getByRole('button',{name:/تحليل محادثة واتساب كاملة/}).click();
+  await page.locator('#parseFeedback .wa-entry').first().waitFor({timeout:10000});
+  const summary=await page.locator('#parseFeedback').innerText();
+  if(!summary.includes('Week:') || !summary.includes('6') || !summary.includes('Evaluation:'))
+    throw Error('Batch parser did not produce a review card');
+  await page.locator('#parseFeedback [data-action="use-chat-row"]').first().click();
   const ev=await page.locator('#progressForm [name="evaluation"]').inputValue();
   const wk=await page.locator('#progressForm [name="week"]').inputValue();
-  if(ev || wk!=='6')throw Error('Week/Evaluation parser failed: '+wk+'/'+ev);
+  const section=await page.locator('#progressForm [name="class_id"]').inputValue();
+  if(ev || wk!=='6' || section)throw Error('Week/Evaluation or explicit section confirmation failed: '+wk+'/'+ev+'/'+section);
   await page.locator('#sideNav [data-page="exams"]').click();
   await page.locator('form[data-form="make-exam"] button[type="submit"]').click();
   await page.locator('[data-action="preview-exam"]').first().waitFor({timeout:10000});
