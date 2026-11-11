@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+  <string name="app_name">TONY AI ICT Cloud (Test)</string>
+  <string name="menu_open_browser">فتح في Chrome للطباعة وPDF</string>
+  <string name="menu_reload">إعادة تحميل</string>
+  <string name="menu_back">رجوع</string>
+  <string name="file_picker">اختر الكتاب أو التقييم أو الملف</string>
+  <string name="offline_message">تعذّر الاتصال بالموقع. تحقق من الإنترنت ثم أعد المحاولة.</string>
+  <string name="invalid_url">تم منع رابط غير آمن</string>
+</resources>
