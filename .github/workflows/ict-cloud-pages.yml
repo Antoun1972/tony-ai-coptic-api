@@ -1,4 +1,4 @@
-name: TONY AI ICT Cloud - Chrome QA and Web Deployment
+name: TONY AI ICT Cloud - Chrome QA and ZIP Release
 on:
   push:
     paths:
@@ -33,6 +33,8 @@ jobs:
           npx playwright install --with-deps chromium
       - name: Run genuine browser functional checks
         run: node ict-cloud/tests/smoke.cjs
+      - name: Verify cloud backend denies anonymous school data
+        run: node ict-cloud/tests/backend-smoke.cjs
       - name: Pack browser app without QA scripts
         shell: bash
         run: |
@@ -53,23 +55,3 @@ jobs:
           path: TONY_AI_ICT_Cloud_MVP_Web.zip
           if-no-files-found: error
           retention-days: 30
-  deploy-pages:
-    needs: test-and-package
-    runs-on: ubuntu-24.04
-    permissions:
-      pages: write
-      id-token: write
-      contents: read
-    environment:
-      name: github-pages
-      url: ${{ steps.deployment.outputs.page_url }}
-    steps:
-      - uses: actions/checkout@v4
-      - uses: actions/configure-pages@v5
-        with:
-          enablement: true
-      - uses: actions/upload-pages-artifact@v3
-        with:
-          path: ./ict-cloud
-      - id: deployment
-        uses: actions/deploy-pages@v4
