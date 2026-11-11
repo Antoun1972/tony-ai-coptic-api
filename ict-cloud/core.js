@@ -154,3 +154,8 @@ window.addEventListener('online',()=>{if(App.session&&!App.demo)bootstrap()});
 window.addEventListener('offline',()=>syncLabel('غير متصل – لن تُحفظ أي تغييرات','bad'));
 window.addEventListener('focus',async()=>{if(App.member&&!App.demo&&!document.activeElement?.closest('form')){try{await loadData({silent:true});render()}catch{}}});
 window.addEventListener('DOMContentLoaded',()=>{const s=readSession();if(s){App.session=s;bootstrap()}else{App.initialized=true;render()}});
+
+// Enable installation on HTTPS; this service worker caches public UI assets only.
+if('serviceWorker' in navigator && (location.protocol==='https:' || location.hostname==='localhost' || location.hostname==='127.0.0.1')){
+  window.addEventListener('load',()=>navigator.serviceWorker.register('./sw.js').catch(e=>console.warn('App install service worker:',e.message)));
+}
