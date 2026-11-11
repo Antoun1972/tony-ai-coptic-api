@@ -1,0 +1,73 @@
+name: TONY AI ICT Cloud - Chrome QA and Web Deployment
+on:
+  push:
+    paths:
+      - "ict-cloud/**"
+      - ".github/workflows/ict-cloud-pages.yml"
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  test-and-package:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Check scripts and school role
+        shell: bash
+        run: |
+          set -eu
+          node --check ict-cloud/core.js
+          node --check ict-cloud/pages.js
+          node --check ict-cloud/extras.js
+          node --check ict-cloud/config.js
+          node --check ict-cloud/tests/smoke.cjs
+          grep -q 'مدرس أول' ict-cloud/index.html
+          grep -q 'printFrame' ict-cloud/index.html
+          ! grep -R -i "service_role\|sk_secret" ict-cloud/config.js
+      - name: Install headless Chrome QA tools
+        run: |
+          npm install --no-save playwright@1.56.1
+          npx playwright install --with-deps chromium
+      - name: Run genuine browser functional checks
+        run: node ict-cloud/tests/smoke.cjs
+      - name: Pack browser app without QA scripts
+        shell: bash
+        run: |
+          mkdir -p /tmp/tony-cloud-release
+          cp ict-cloud/{index.html,styles.css,config.js,core.js,pages.js,extras.js,manifest.webmanifest,icon.svg,README.md} /tmp/tony-cloud-release/
+          cd /tmp/tony-cloud-release
+          zip -q "$GITHUB_WORKSPACE/TONY_AI_ICT_Cloud_MVP_Web.zip" *
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: TONY_AI_ICT_Cloud_QA_Screenshots
+          path: ict-cloud-*.png
+          if-no-files-found: ignore
+          retention-days: 14
+      - uses: actions/upload-artifact@v4
+        with:
+          name: TONY_AI_ICT_Cloud_MVP_Web_ZIP
+          path: TONY_AI_ICT_Cloud_MVP_Web.zip
+          if-no-files-found: error
+          retention-days: 30
+  deploy-pages:
+    needs: test-and-package
+    runs-on: ubuntu-latest
+    permissions:
+      pages: write
+      id-token: write
+      contents: read
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/configure-pages@v5
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: ./ict-cloud
+      - id: deployment
+        uses: actions/deploy-pages@v4
