@@ -1,0 +1,26 @@
+name: Verify WhatsApp Inbox Bridge (synthetic only)
+on:
+  push:
+    paths:
+      - 'integrations/whatsapp/**'
+      - '.github/workflows/verify-whatsapp-inbox.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  security-tests:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: JavaScript syntax check
+        run: node --check integrations/whatsapp/worker.mjs
+      - name: Test Meta signature, secret lockdown, authorization and storage behavior
+        run: node --test integrations/whatsapp/worker.test.mjs
+      - name: Ensure no real staff numbers or service keys committed
+        run: |
+          test ! -f integrations/whatsapp/.env
+          test -s integrations/whatsapp/schema.sql
+          test -s integrations/whatsapp/README.md
